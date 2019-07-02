@@ -1428,6 +1428,7 @@ static void setup_shm(void) {
         PFATAL("CreateFileMapping failed");
       }
     }
+    SAYF("\n[*] created shared memory %s\n", shm_str);
 
     // We found a section name that works!
     break;
@@ -2525,7 +2526,7 @@ static int is_child_running() {
 //Define the function prototypes
 typedef int (APIENTRY* dll_run)(char*, long, int);
 typedef int (APIENTRY* dll_init)();
-typedef u8 (APIENTRY* dll_run_target)(char**, u32, char*, u32);
+typedef u8 (APIENTRY* dll_run_target)(char**, u32, char*, u32, char*, long, int);
 typedef void (APIENTRY *dll_write_to_testcase)(char*, s32, const void*, u32);
 
 // custom server functions
@@ -2579,7 +2580,9 @@ static u8 run_target(char** argv, u32 timeout) {
 	total_execs++;
 
     if (dll_run_target_ptr) {
-      return dll_run_target_ptr(argv, timeout, trace_bits, MAP_SIZE);
+      long fsize;
+      char *buf = get_test_case(&fsize);
+      return dll_run_target_ptr(argv, timeout, trace_bits, MAP_SIZE, buf, fsize, fuzz_iterations_current);
     }
 
 #ifdef INTELPT
@@ -5168,7 +5171,7 @@ static u8 fuzz_one(char** argv) {
 
 #endif /* ^IGNORE_FINDS */
 
-  if (not_on_tty)
+  if (0 && not_on_tty)
     ACTF("Fuzzing test case #%u (%u total)...", current_entry, queued_paths);
 
   /* Map the test case into memory. */
@@ -8092,7 +8095,7 @@ int main(int argc, char** argv) {
 
       show_stats();
 
-      if (not_on_tty) {
+      if (0 && not_on_tty) {
         ACTF("Entering queue cycle %llu.", queue_cycle);
         fflush(stdout);
       }

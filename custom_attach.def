@@ -1,0 +1,4 @@
+EXPORTS
+dll_init
+dll_run_target
+dll_write_to_testcase
